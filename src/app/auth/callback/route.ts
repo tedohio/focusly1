@@ -12,9 +12,12 @@ export async function GET(request: NextRequest) {
     // DANGEROUS DANGEROUS DANGEROUS - Critical authentication callback setup
     // This is the most fragile part of the auth flow - handles Supabase magic link authentication
     // Any changes to cookie handling or Supabase auth flow will break user login
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key';
+    
     const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      supabaseUrl,
+      supabaseAnonKey,
       {
         cookies: {
           get(name: string) {
