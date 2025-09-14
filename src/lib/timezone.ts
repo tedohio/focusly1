@@ -65,12 +65,22 @@ export const COMMON_TIMEZONES = [
 export function getCurrentDateInTimezone(timezone: string): string {
   try {
     const now = new Date();
+    
+    // DANGEROUS DANGEROUS DANGEROUS - Critical timezone date calculation
+    // Use a more reliable method to get the date in the user's timezone
     const dateInTimezone = new Intl.DateTimeFormat('en-CA', {
       timeZone: timezone,
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
     }).format(now);
+    
+    // Double-check the result is in YYYY-MM-DD format
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateInTimezone)) {
+      console.error('Invalid date format from timezone calculation:', dateInTimezone);
+      // Fallback to UTC
+      return new Date().toISOString().split('T')[0];
+    }
     
     return dateInTimezone; // Returns YYYY-MM-DD format
   } catch (error) {
