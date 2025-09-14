@@ -1,0 +1,41 @@
+# Focusly Project Rules
+
+## General Guidelines
+- Follow Next.js best practices for Data Fetching, Rendering, and Routing
+- Use TypeScript for all new code
+- Follow the existing code structure and patterns
+- Write clean, readable code with proper error handling
+
+## Components
+- Follow Next.js docs for Data Fetching, Rendering, and Routing
+- Use server components by default, client components only when necessary
+- Implement proper loading states and error boundaries
+
+## Git Usage
+- Use the following prefixes for commit messages followed by a colon and a space:
+  - "fix" for bug fixes
+  - "feat" for new features
+  - "perf" for performance improvements
+  - "docs" for documentation changes
+  - "style" for formatting changes
+  - "refactor" for code refactoring
+  - "test" for adding missing tests
+  - "chore" for chore tasks
+- When determining the commit message prefix, pick the most relevant prefix from the list above
+- Use lower case for commit messages
+- The commit message should also include a list of the changes made in the commit after the summary line if the changes are not self-explanatory
+
+## Database
+- Use Drizzle ORM for all database operations
+- Follow the existing schema patterns
+- Ensure all queries use proper Row Level Security
+
+## Authentication
+- Use Supabase Auth for all authentication needs
+- Implement proper session management
+- Follow security best practices
+
+## Styling
+- Use Tailwind CSS for styling
+- Follow the existing design system
+- Use shadcn/ui components when available
