@@ -6,6 +6,9 @@ export async function middleware(request: NextRequest) {
     request,
   });
 
+  // DANGEROUS DANGEROUS DANGEROUS - Critical middleware authentication setup
+  // This middleware runs on every request and handles all authentication
+  // If this breaks, the entire app's security is compromised
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -52,12 +55,13 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // If user is not signed in and the current path is not /login, redirect to /login
+  // DANGEROUS DANGEROUS DANGEROUS - Critical routing logic for authentication
+  // This controls access to all pages - if this logic is wrong, users could access protected routes
+  // or get stuck in redirect loops
   if (!user && request.nextUrl.pathname !== '/login') {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  // If user is signed in and the current path is /login, redirect to /
   if (user && request.nextUrl.pathname === '/login') {
     return NextResponse.redirect(new URL('/', request.url));
   }

@@ -1,34 +1,66 @@
 'use server';
 
-import { db } from '@/db/drizzle';
-import { reflections } from '@/db/schema';
+import { createServerClient } from '@supabase/ssr';
 import { requireAuth } from '@/lib/auth';
 import { reflectionSchema } from '@/lib/validators';
-import { eq, and, desc } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
+import { cookies } from 'next/headers';
 
 export async function getReflections() {
   const user = await requireAuth();
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+      },
+    }
+  );
   
-  const userReflections = await db
-    .select()
-    .from(reflections)
-    .where(eq(reflections.userId, user.id))
-    .orderBy(desc(reflections.forDate), desc(reflections.createdAt));
+  const { data: reflections, error } = await supabase
+    .from('reflections')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('for_date', { ascending: false })
+    .order('created_at', { ascending: false });
 
-  return userReflections;
+  if (error) {
+    throw new Error(`Failed to fetch reflections: ${error.message}`);
+  }
+  return reflections || [];
 }
 
 export async function getReflection(forDate: string) {
   const user = await requireAuth();
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+      },
+    }
+  );
   
-  const reflection = await db
-    .select()
-    .from(reflections)
-    .where(and(eq(reflections.userId, user.id), eq(reflections.forDate, forDate)))
-    .limit(1);
+  const { data: reflection, error } = await supabase
+    .from('reflections')
+    .select('*')
+    .eq('user_id', user.id)
+    .eq('for_date', forDate)
+    .limit(1)
+    .single();
 
-  return reflection[0] || null;
+  if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+    throw new Error(`Failed to fetch reflection: ${error.message}`);
+  }
+  return reflection || null;
 }
 
 export async function createReflection(data: {
@@ -39,6 +71,18 @@ export async function createReflection(data: {
   isMonthly?: boolean;
 }) {
   const user = await requireAuth();
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+      },
+    }
+  );
   
   const validatedData = reflectionSchema.parse(data);
 
@@ -47,31 +91,49 @@ export async function createReflection(data: {
   
   if (existing) {
     // Update existing reflection
-    const updatedReflection = await db
-      .update(reflections)
-      .set({
-        ...validatedData,
-        updatedAt: new Date(),
+    const { data: updatedReflection, error } = await supabase
+      .from('reflections')
+      .update({
+        what_went_well: validatedData.whatWentWell, // camelCase -> snake_case
+        what_didnt_go_well: validatedData.whatDidntGoWell, // camelCase -> snake_case
+        improvements: validatedData.improvements,
+        is_monthly: validatedData.isMonthly, // camelCase -> snake_case
+        updated_at: new Date(),
       })
-      .where(and(eq(reflections.id, existing.id), eq(reflections.userId, user.id)))
-      .returning();
+      .eq('id', existing.id)
+      .eq('user_id', user.id)
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to update reflection: ${error.message}`);
+    }
 
     revalidatePath('/history');
     revalidatePath('/actions');
-    return updatedReflection[0];
+    return updatedReflection;
   } else {
     // Create new reflection
-    const newReflection = await db
-      .insert(reflections)
-      .values({
-        ...validatedData,
-        userId: user.id,
+    const { data: newReflection, error } = await supabase
+      .from('reflections')
+      .insert({
+        what_went_well: validatedData.whatWentWell, // camelCase -> snake_case
+        what_didnt_go_well: validatedData.whatDidntGoWell, // camelCase -> snake_case
+        improvements: validatedData.improvements,
+        for_date: validatedData.forDate, // camelCase -> snake_case
+        is_monthly: validatedData.isMonthly, // camelCase -> snake_case
+        user_id: user.id, // camelCase -> snake_case
       })
-      .returning();
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to create reflection: ${error.message}`);
+    }
 
     revalidatePath('/history');
     revalidatePath('/actions');
-    return newReflection[0];
+    return newReflection;
   }
 }
 
@@ -81,27 +143,68 @@ export async function updateReflection(id: string, data: Partial<{
   improvements: string;
 }>) {
   const user = await requireAuth();
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+      },
+    }
+  );
   
-  const updatedReflection = await db
-    .update(reflections)
-    .set({
-      ...data,
-      updatedAt: new Date(),
-    })
-    .where(and(eq(reflections.id, id), eq(reflections.userId, user.id)))
-    .returning();
+  const updateData: any = {
+    updated_at: new Date(),
+  };
+  
+  if (data.whatWentWell !== undefined) updateData.what_went_well = data.whatWentWell; // camelCase -> snake_case
+  if (data.whatDidntGoWell !== undefined) updateData.what_didnt_go_well = data.whatDidntGoWell; // camelCase -> snake_case
+  if (data.improvements !== undefined) updateData.improvements = data.improvements;
+
+  const { data: updatedReflection, error } = await supabase
+    .from('reflections')
+    .update(updateData)
+    .eq('id', id)
+    .eq('user_id', user.id)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(`Failed to update reflection: ${error.message}`);
+  }
 
   revalidatePath('/history');
   revalidatePath('/actions');
-  return updatedReflection[0];
+  return updatedReflection;
 }
 
 export async function deleteReflection(id: string) {
   const user = await requireAuth();
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+      },
+    }
+  );
   
-  await db
-    .delete(reflections)
-    .where(and(eq(reflections.id, id), eq(reflections.userId, user.id)));
+  const { error } = await supabase
+    .from('reflections')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', user.id);
+
+  if (error) {
+    throw new Error(`Failed to delete reflection: ${error.message}`);
+  }
 
   revalidatePath('/history');
   revalidatePath('/actions');

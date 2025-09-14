@@ -9,6 +9,9 @@ export async function GET(request: NextRequest) {
 
   if (code) {
     const cookieStore = await cookies();
+    // DANGEROUS DANGEROUS DANGEROUS - Critical authentication callback setup
+    // This is the most fragile part of the auth flow - handles Supabase magic link authentication
+    // Any changes to cookie handling or Supabase auth flow will break user login
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -27,13 +30,18 @@ export async function GET(request: NextRequest) {
       }
     );
 
+    // DANGEROUS DANGEROUS DANGEROUS - Critical auth code exchange
+    // This is where the magic link code gets exchanged for a session
+    // If this fails, users cannot log in at all
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     
     if (!error) {
       const { data: { user } } = await supabase.auth.getUser();
       
       if (user) {
-        // Check if profile exists, create if not
+        // DANGEROUS DANGEROUS DANGEROUS - Automatic profile creation logic
+        // This creates user profiles automatically but could create duplicate profiles
+        // if the logic fails or if there are race conditions
         const { data: profile } = await supabase
           .from('profiles')
           .select('*')

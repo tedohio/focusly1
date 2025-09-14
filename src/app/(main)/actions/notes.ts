@@ -1,34 +1,66 @@
 'use server';
 
-import { db } from '@/db/drizzle';
-import { notes } from '@/db/schema';
+import { createServerClient } from '@supabase/ssr';
 import { requireAuth } from '@/lib/auth';
 import { noteSchema } from '@/lib/validators';
-import { eq, and, desc } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
+import { cookies } from 'next/headers';
 
 export async function getNotes() {
   const user = await requireAuth();
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+      },
+    }
+  );
   
-  const userNotes = await db
-    .select()
-    .from(notes)
-    .where(eq(notes.userId, user.id))
-    .orderBy(desc(notes.forDate), desc(notes.createdAt));
+  const { data: notes, error } = await supabase
+    .from('notes')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('for_date', { ascending: false })
+    .order('created_at', { ascending: false });
 
-  return userNotes;
+  if (error) {
+    throw new Error(`Failed to fetch notes: ${error.message}`);
+  }
+  return notes || [];
 }
 
 export async function getNote(forDate: string) {
   const user = await requireAuth();
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+      },
+    }
+  );
   
-  const note = await db
-    .select()
-    .from(notes)
-    .where(and(eq(notes.userId, user.id), eq(notes.forDate, forDate)))
-    .limit(1);
+  const { data: note, error } = await supabase
+    .from('notes')
+    .select('*')
+    .eq('user_id', user.id)
+    .eq('for_date', forDate)
+    .limit(1)
+    .single();
 
-  return note[0] || null;
+  if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+    throw new Error(`Failed to fetch note: ${error.message}`);
+  }
+  return note || null;
 }
 
 export async function createNote(data: {
@@ -36,6 +68,18 @@ export async function createNote(data: {
   forDate: string;
 }) {
   const user = await requireAuth();
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+      },
+    }
+  );
   
   const validatedData = noteSchema.parse(data);
 
@@ -44,31 +88,43 @@ export async function createNote(data: {
   
   if (existing) {
     // Update existing note
-    const updatedNote = await db
-      .update(notes)
-      .set({
-        ...validatedData,
-        updatedAt: new Date(),
+    const { data: updatedNote, error } = await supabase
+      .from('notes')
+      .update({
+        content: validatedData.content,
+        updated_at: new Date(),
       })
-      .where(and(eq(notes.id, existing.id), eq(notes.userId, user.id)))
-      .returning();
+      .eq('id', existing.id)
+      .eq('user_id', user.id)
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to update note: ${error.message}`);
+    }
 
     revalidatePath('/history');
     revalidatePath('/actions');
-    return updatedNote[0];
+    return updatedNote;
   } else {
     // Create new note
-    const newNote = await db
-      .insert(notes)
-      .values({
-        ...validatedData,
-        userId: user.id,
+    const { data: newNote, error } = await supabase
+      .from('notes')
+      .insert({
+        content: validatedData.content,
+        for_date: validatedData.forDate, // camelCase -> snake_case
+        user_id: user.id, // camelCase -> snake_case
       })
-      .returning();
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to create note: ${error.message}`);
+    }
 
     revalidatePath('/history');
     revalidatePath('/actions');
-    return newNote[0];
+    return newNote;
   }
 }
 
@@ -76,27 +132,66 @@ export async function updateNote(id: string, data: Partial<{
   content: string;
 }>) {
   const user = await requireAuth();
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+      },
+    }
+  );
   
-  const updatedNote = await db
-    .update(notes)
-    .set({
-      ...data,
-      updatedAt: new Date(),
-    })
-    .where(and(eq(notes.id, id), eq(notes.userId, user.id)))
-    .returning();
+  const updateData: any = {
+    updated_at: new Date(),
+  };
+  
+  if (data.content !== undefined) updateData.content = data.content;
+
+  const { data: updatedNote, error } = await supabase
+    .from('notes')
+    .update(updateData)
+    .eq('id', id)
+    .eq('user_id', user.id)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(`Failed to update note: ${error.message}`);
+  }
 
   revalidatePath('/history');
   revalidatePath('/actions');
-  return updatedNote[0];
+  return updatedNote;
 }
 
 export async function deleteNote(id: string) {
   const user = await requireAuth();
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+      },
+    }
+  );
   
-  await db
-    .delete(notes)
-    .where(and(eq(notes.id, id), eq(notes.userId, user.id)));
+  const { error } = await supabase
+    .from('notes')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', user.id);
+
+  if (error) {
+    throw new Error(`Failed to delete note: ${error.message}`);
+  }
 
   revalidatePath('/history');
   revalidatePath('/actions');

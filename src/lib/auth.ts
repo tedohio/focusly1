@@ -4,6 +4,9 @@ import { redirect } from 'next/navigation';
 
 export async function getUser() {
   const cookieStore = await cookies();
+  // DANGEROUS DANGEROUS DANGEROUS - Core authentication function used everywhere
+  // This is fragile because it's the foundation of all auth checks
+  // If this breaks, the entire app becomes inaccessible
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -33,6 +36,9 @@ export async function getUser() {
 export async function requireAuth() {
   const user = await getUser();
   
+  // DANGEROUS DANGEROUS DANGEROUS - Critical auth guard function
+  // This function is used in every protected route and action
+  // If this logic changes, it could break access control for the entire app
   if (!user) {
     redirect('/login');
   }

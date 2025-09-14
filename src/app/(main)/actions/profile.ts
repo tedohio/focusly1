@@ -1,22 +1,37 @@
 'use server';
 
-import { db } from '@/db/drizzle';
-import { profiles } from '@/db/schema';
+import { createServerClient } from '@supabase/ssr';
 import { requireAuth } from '@/lib/auth';
 import { profileSchema } from '@/lib/validators';
-import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
+import { cookies } from 'next/headers';
 
 export async function getProfile() {
   const user = await requireAuth();
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+      },
+    }
+  );
   
-  const profile = await db
-    .select()
-    .from(profiles)
-    .where(eq(profiles.userId, user.id))
-    .limit(1);
+  const { data: profile, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('user_id', user.id)
+    .limit(1)
+    .single();
 
-  return profile[0] || null;
+  if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+    throw new Error(`Failed to fetch profile: ${error.message}`);
+  }
+  return profile || null;
 }
 
 export async function updateProfile(data: Partial<{
@@ -25,36 +40,75 @@ export async function updateProfile(data: Partial<{
   timezone: string;
 }>) {
   const user = await requireAuth();
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+      },
+    }
+  );
   
   const validatedData = profileSchema.parse(data);
 
-  const updatedProfile = await db
-    .update(profiles)
-    .set({
-      ...validatedData,
-      updatedAt: new Date(),
-    })
-    .where(eq(profiles.userId, user.id))
-    .returning();
+  const updateData: any = {
+    updated_at: new Date(),
+  };
+  
+  if (data.onboardingCompleted !== undefined) updateData.onboarding_completed = data.onboardingCompleted; // camelCase -> snake_case
+  if (data.lastMonthlyReviewAt !== undefined) updateData.last_monthly_review_at = data.lastMonthlyReviewAt; // camelCase -> snake_case
+  if (data.timezone !== undefined) updateData.timezone = data.timezone;
+
+  const { data: updatedProfile, error } = await supabase
+    .from('profiles')
+    .update(updateData)
+    .eq('user_id', user.id)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(`Failed to update profile: ${error.message}`);
+  }
 
   revalidatePath('/');
   revalidatePath('/settings');
-  return updatedProfile[0];
+  return updatedProfile;
 }
 
 export async function completeOnboarding() {
   const user = await requireAuth();
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+      },
+    }
+  );
   
-  const updatedProfile = await db
-    .update(profiles)
-    .set({
-      onboardingCompleted: true,
-      updatedAt: new Date(),
+  const { data: updatedProfile, error } = await supabase
+    .from('profiles')
+    .update({
+      onboarding_completed: true, // camelCase -> snake_case
+      updated_at: new Date(),
     })
-    .where(eq(profiles.userId, user.id))
-    .returning();
+    .eq('user_id', user.id)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(`Failed to complete onboarding: ${error.message}`);
+  }
 
   revalidatePath('/');
   revalidatePath('/onboarding');
-  return updatedProfile[0];
+  return updatedProfile;
 }
