@@ -1,4 +1,4 @@
-import { getUser } from '@/lib/auth';
+import { getUser, getProfile } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import TodoList from '@/components/TodoList';
 import GoalsSideDrawer from '@/components/GoalsSideDrawer';
@@ -13,7 +13,8 @@ export default async function TodayPage() {
     redirect('/login');
   }
 
-  const today = getToday();
+  const profile = await getProfile(user.id);
+  const today = getToday(profile?.timezone);
 
   return (
     <div className="space-y-6">

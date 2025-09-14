@@ -1,10 +1,11 @@
 'use server';
 
 import { createServerClient } from '@supabase/ssr';
-import { requireAuth } from '@/lib/auth';
+import { requireAuth, getProfile } from '@/lib/auth';
 import { todoSchema } from '@/lib/validators';
 import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
+import { getCurrentDateInTimezone } from '@/lib/timezone';
 
 export async function getTodos(forDate: string) {
   const user = await requireAuth();
@@ -37,10 +38,11 @@ export async function getTodos(forDate: string) {
 
 export async function createTodo(data: {
   title: string;
-  forDate: string;
+  forDate?: string; // Make optional, will use current date in user's timezone if not provided
   dueDate?: string;
 }) {
   const user = await requireAuth();
+  const profile = await getProfile(user.id);
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -54,8 +56,13 @@ export async function createTodo(data: {
     }
   );
   
+  // DANGEROUS DANGEROUS DANGEROUS - Critical timezone-aware date handling
+  // If this is wrong, todos will be created for the wrong date
+  const forDate = data.forDate || getCurrentDateInTimezone(profile?.timezone || 'UTC');
+  
   const validatedData = todoSchema.parse({
     ...data,
+    forDate,
     order: 0, // Will be updated after getting max order
     done: false,
   });

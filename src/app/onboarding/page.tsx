@@ -13,8 +13,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { GripVertical, Plus, Trash2, ArrowRight, ArrowLeft } from 'lucide-react';
 import { createLongTermGoal, createFocusAreas, createMonthlyGoals } from '@/app/(main)/actions/goals';
-import { completeOnboarding } from '@/app/(main)/actions/profile';
+import { completeOnboarding, updateProfile } from '@/app/(main)/actions/profile';
 import { getCurrentMonth, getCurrentYear } from '@/lib/date';
+import { COMMON_TIMEZONES, getDefaultTimezone } from '@/lib/timezone';
 import { toast } from 'sonner';
 import ConfirmDialog from '@/components/ConfirmDialog';
 
@@ -35,6 +36,7 @@ const STEPS = [
   'long-term-goal',
   'focus-areas',
   'monthly-goals',
+  'timezone',
   'complete'
 ] as const;
 
@@ -52,6 +54,7 @@ export default function OnboardingPage() {
     { id: '2', title: '', order: 2 },
     { id: '3', title: '', order: 3 },
   ]);
+  const [timezone, setTimezone] = useState(getDefaultTimezone());
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const router = useRouter();
@@ -83,6 +86,14 @@ export default function OnboardingPage() {
     mutationFn: createMonthlyGoals,
     onError: (error) => {
       toast.error('Failed to save monthly goals');
+      console.error(error);
+    },
+  });
+
+  const updateProfileMutation = useMutation({
+    mutationFn: updateProfile,
+    onError: (error) => {
+      toast.error('Failed to update timezone');
       console.error(error);
     },
   });
@@ -137,6 +148,14 @@ export default function OnboardingPage() {
               order: goal.order,
             }))
           );
+          break;
+          
+        case 'timezone':
+          if (!timezone) {
+            toast.error('Please select your timezone');
+            return;
+          }
+          await updateProfileMutation.mutateAsync({ timezone });
           break;
           
         case 'complete':
@@ -348,6 +367,37 @@ export default function OnboardingPage() {
           </Card>
         );
 
+      case 'timezone':
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle>Your Timezone</CardTitle>
+              <CardDescription>
+                Select your timezone to ensure accurate date and time tracking
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <label className="text-sm font-medium">Timezone</label>
+                <select
+                  value={timezone}
+                  onChange={(e) => setTimezone(e.target.value)}
+                  className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                >
+                  {COMMON_TIMEZONES.map((tz) => (
+                    <option key={tz.value} value={tz.value}>
+                      {tz.label}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-xs text-gray-500">
+                  This ensures your daily tasks, notes, and reflections are tracked correctly for your local time.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        );
+
       case 'complete':
         return (
           <Card>
@@ -400,6 +450,7 @@ export default function OnboardingPage() {
   const isLoading = createLongTermGoalMutation.isPending || 
                    createFocusAreasMutation.isPending || 
                    createMonthlyGoalsMutation.isPending || 
+                   updateProfileMutation.isPending ||
                    completeOnboardingMutation.isPending;
 
   return (

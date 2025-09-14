@@ -1,10 +1,11 @@
 'use server';
 
 import { createServerClient } from '@supabase/ssr';
-import { requireAuth } from '@/lib/auth';
+import { requireAuth, getProfile } from '@/lib/auth';
 import { noteSchema } from '@/lib/validators';
 import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
+import { getCurrentDateInTimezone } from '@/lib/timezone';
 
 export async function getNotes() {
   const user = await requireAuth();
@@ -65,9 +66,10 @@ export async function getNote(forDate: string) {
 
 export async function createNote(data: {
   content: string;
-  forDate: string;
+  forDate?: string; // Make optional, will use current date in user's timezone if not provided
 }) {
   const user = await requireAuth();
+  const profile = await getProfile(user.id);
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -81,10 +83,14 @@ export async function createNote(data: {
     }
   );
   
-  const validatedData = noteSchema.parse(data);
+  // DANGEROUS DANGEROUS DANGEROUS - Critical timezone-aware date handling
+  // If this is wrong, notes will be created for the wrong date
+  const forDate = data.forDate || getCurrentDateInTimezone(profile?.timezone || 'UTC');
+  
+  const validatedData = noteSchema.parse({ ...data, forDate });
 
   // Check if note already exists for this date
-  const existing = await getNote(data.forDate);
+  const existing = await getNote(forDate);
   
   if (existing) {
     // Update existing note

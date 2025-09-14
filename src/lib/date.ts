@@ -1,19 +1,36 @@
+import { getCurrentDateInTimezone, getStartOfDayInTimezone, getEndOfDayInTimezone } from './timezone';
+
 export function formatDate(date: Date | string): string {
   const d = typeof date === 'string' ? new Date(date) : date;
   return d.toISOString().split('T')[0];
 }
 
-export function getToday(): string {
+export function getToday(timezone?: string): string {
+  if (timezone) {
+    return getCurrentDateInTimezone(timezone);
+  }
   return formatDate(new Date());
 }
 
-export function getTomorrow(): string {
+export function getTomorrow(timezone?: string): string {
+  if (timezone) {
+    const today = new Date(getCurrentDateInTimezone(timezone));
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return formatDate(tomorrow);
+  }
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   return formatDate(tomorrow);
 }
 
-export function getYesterday(): string {
+export function getYesterday(timezone?: string): string {
+  if (timezone) {
+    const today = new Date(getCurrentDateInTimezone(timezone));
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    return formatDate(yesterday);
+  }
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
   return formatDate(yesterday);
