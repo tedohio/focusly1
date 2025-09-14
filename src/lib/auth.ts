@@ -72,7 +72,16 @@ export async function getProfile(userId: string) {
       return null;
     }
     
-    return data;
+    // DANGEROUS DANGEROUS DANGEROUS - Critical field mapping for profile data
+    // This maps database snake_case fields to camelCase for frontend consumption
+    // If this mapping is wrong, onboarding completion detection will fail
+    return {
+      ...data,
+      onboardingCompleted: data.onboarding_completed,
+      lastMonthlyReviewAt: data.last_monthly_review_at,
+      createdAt: data.created_at,
+      updatedAt: data.updated_at,
+    };
   } catch (error) {
     console.error('Error getting profile:', error);
     return null;
@@ -109,7 +118,16 @@ export async function createProfile(userId: string) {
       return null;
     }
     
-    return data;
+    // DANGEROUS DANGEROUS DANGEROUS - Critical field mapping for newly created profile
+    // This maps database snake_case fields to camelCase for frontend consumption
+    // If this mapping is wrong, onboarding completion detection will fail
+    return {
+      ...data,
+      onboardingCompleted: data.onboarding_completed,
+      lastMonthlyReviewAt: data.last_monthly_review_at,
+      createdAt: data.created_at,
+      updatedAt: data.updated_at,
+    };
   } catch (error) {
     console.error('Error creating profile:', error);
     return null;
