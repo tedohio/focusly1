@@ -412,29 +412,29 @@ export default function OnboardingPage() {
                 <div className="flex items-start space-x-3">
                   <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-sm font-medium text-blue-600">1</div>
                   <div>
+                    <h3 className="font-medium">Today's To-Dos</h3>
+                    <p className="text-sm text-gray-600">Execute on your priorities with drag-to-reorder</p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-sm font-medium text-blue-600">2</div>
+                  <div>
                     <h3 className="font-medium">Take Notes</h3>
                     <p className="text-sm text-gray-600">Capture thoughts and ideas throughout the day</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-sm font-medium text-blue-600">2</div>
+                  <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-sm font-medium text-blue-600">3</div>
                   <div>
                     <h3 className="font-medium">Reflect</h3>
                     <p className="text-sm text-gray-600">What went well? What didn't? How can you improve?</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-sm font-medium text-blue-600">3</div>
+                  <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-sm font-medium text-blue-600">4</div>
                   <div>
                     <h3 className="font-medium">Create Tomorrow's To-Dos</h3>
                     <p className="text-sm text-gray-600">Plan your next day by moving incomplete tasks</p>
-                  </div>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-sm font-medium text-blue-600">4</div>
-                  <div>
-                    <h3 className="font-medium">Today's To-Dos</h3>
-                    <p className="text-sm text-gray-600">Execute on your priorities with drag-to-reorder</p>
                   </div>
                 </div>
               </div>
