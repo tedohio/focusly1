@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { AuroraBackground } from '@/components/ui/AuroraBackground';
 import { FloatingOrbs } from '@/components/ui/FloatingOrbs';
+import { BrandHeader } from '@/components/ui/BrandHeader';
 import { toast } from 'sonner';
 import { Mail, Chrome } from 'lucide-react';
 
@@ -73,14 +74,18 @@ export default function LoginPage() {
       <div className="relative z-10 flex min-h-screen items-center justify-center p-4">
         <div className="w-full max-w-[420px] space-y-8">
           {/* Header */}
-          <div className="text-center space-y-2">
-            <h1 className="text-3xl font-semibold tracking-tight text-white">
-              Focusly
-            </h1>
-            <p className="text-sm text-white/70">
-              Cut the noise and execute on what matters
-            </p>
-          </div>
+          <BrandHeader
+            // Uncomment and configure when you have your logo:
+            // logo={{
+            //   src: '/logo.png', // Path to your logo file
+            //   alt: 'Focusly Logo',
+            //   width: 56,
+            //   height: 56
+            // }}
+            title="Focusly"
+            subtitle="Cut the noise and execute on what matters"
+            layout="logo-above-text" // Options: 'logo-only', 'logo-text', 'logo-above-text'
+          />
 
           {/* Login Card */}
           <Card className="glass-card rounded-2xl border-0">
