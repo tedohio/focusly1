@@ -32,7 +32,19 @@ export async function getReflections() {
   if (error) {
     throw new Error(`Failed to fetch reflections: ${error.message}`);
   }
-  return reflections || [];
+  
+  // Map database field names (snake_case) to frontend field names (camelCase)
+  return (reflections || []).map(reflection => ({
+    id: reflection.id,
+    userId: reflection.user_id,
+    whatWentWell: reflection.what_went_well,
+    whatDidntGoWell: reflection.what_didnt_go_well,
+    improvements: reflection.improvements,
+    forDate: reflection.for_date,
+    isMonthly: reflection.is_monthly,
+    createdAt: reflection.created_at,
+    updatedAt: reflection.updated_at,
+  }));
 }
 
 export async function getReflection(forDate: string) {
@@ -61,7 +73,23 @@ export async function getReflection(forDate: string) {
   if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
     throw new Error(`Failed to fetch reflection: ${error.message}`);
   }
-  return reflection || null;
+  
+  // Map database field names (snake_case) to frontend field names (camelCase)
+  if (reflection) {
+    return {
+      id: reflection.id,
+      userId: reflection.user_id,
+      whatWentWell: reflection.what_went_well,
+      whatDidntGoWell: reflection.what_didnt_go_well,
+      improvements: reflection.improvements,
+      forDate: reflection.for_date,
+      isMonthly: reflection.is_monthly,
+      createdAt: reflection.created_at,
+      updatedAt: reflection.updated_at,
+    };
+  }
+  
+  return null;
 }
 
 export async function createReflection(data: {
