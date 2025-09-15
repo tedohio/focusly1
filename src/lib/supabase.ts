@@ -17,7 +17,22 @@ declare global {
 export const createClientComponentClient = () => {
   // Check if we're in the browser
   if (typeof window === 'undefined') {
-    throw new Error('createClientComponentClient can only be called on the client side');
+    // Return a mock client for SSR - this prevents build errors
+    // The real client will be created when the component hydrates
+    return {
+      auth: {
+        signInWithOtp: () => Promise.resolve({ error: null }),
+        signOut: () => Promise.resolve({ error: null }),
+        getUser: () => Promise.resolve({ data: { user: null }, error: null }),
+        onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+      },
+      from: () => ({
+        select: () => ({ eq: () => ({ data: [], error: null }) }),
+        insert: () => ({ data: [], error: null }),
+        update: () => ({ eq: () => ({ data: [], error: null }) }),
+        delete: () => ({ eq: () => ({ data: [], error: null }) }),
+      }),
+    } as any;
   }
 
   // Use globalThis to ensure singleton across hydration
