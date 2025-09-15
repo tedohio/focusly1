@@ -7,6 +7,20 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get('code');
   const next = searchParams.get('next') ?? '/';
 
+  // DANGEROUS DANGEROUS DANGEROUS - Critical authentication callback setup
+  // This is the most fragile part of the auth flow - handles Supabase magic link authentication
+  // Any changes to cookie handling or Supabase auth flow will break user login
+  
+  console.log('🔍 Auth callback debug:', {
+    origin,
+    code: code ? 'present' : 'missing',
+    next,
+    env: {
+      supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL ? 'set' : 'missing',
+      supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'set' : 'missing',
+    }
+  });
+
   if (code) {
     const cookieStore = await cookies();
     // DANGEROUS DANGEROUS DANGEROUS - Critical authentication callback setup
@@ -40,6 +54,7 @@ export async function GET(request: NextRequest) {
     
     if (!error) {
       const { data: { user } } = await supabase.auth.getUser();
+      console.log('✅ Auth exchange successful, user:', user ? user.id : 'null');
       
       if (user) {
         // DANGEROUS DANGEROUS DANGEROUS - Automatic profile creation logic
@@ -52,6 +67,7 @@ export async function GET(request: NextRequest) {
           .single();
 
         if (!profile) {
+          console.log('📝 Creating new profile for user:', user.id);
           await supabase
             .from('profiles')
             .insert({
@@ -59,10 +75,12 @@ export async function GET(request: NextRequest) {
               onboarding_completed: false,
               timezone: 'UTC',
             });
+        } else {
+          console.log('👤 Profile exists for user:', user.id);
         }
       }
     } else {
-      console.error('Auth error:', error);
+      console.error('❌ Auth exchange error:', error);
     }
   }
 
