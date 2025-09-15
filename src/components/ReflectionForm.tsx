@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Target, Save } from 'lucide-react';
 import { getReflection, createReflection } from '@/app/(main)/actions/reflections';
+import { formatDateString } from '@/lib/timezone';
 import { toast } from 'sonner';
 
 interface ReflectionFormProps {
@@ -83,12 +84,7 @@ export default function ReflectionForm({ forDate, onComplete }: ReflectionFormPr
       <div className="flex items-center space-x-2 text-sm text-gray-600">
         <Target className="h-4 w-4" />
         <span>
-          {new Date(forDate).toLocaleDateString('en-US', { 
-            weekday: 'long',
-            month: 'long', 
-            day: 'numeric',
-            year: 'numeric'
-          })}
+          {formatDateString(forDate)}
         </span>
       </div>
 

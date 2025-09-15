@@ -26,7 +26,8 @@ export default async function TodayPage() {
               weekday: 'long', 
               year: 'numeric', 
               month: 'long', 
-              day: 'numeric' 
+              day: 'numeric',
+              timeZone: profile?.timezone || 'UTC'
             })}
           </p>
         </div>

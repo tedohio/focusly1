@@ -241,3 +241,26 @@ export function formatDateInTimezone(date: Date | string, timezone: string, opti
     return typeof date === 'string' ? date : date.toDateString();
   }
 }
+
+/**
+ * Format a YYYY-MM-DD date string for display
+ * DANGEROUS DANGEROUS DANGEROUS - Critical date formatting
+ * This formats date strings that are already in the correct timezone
+ */
+export function formatDateString(dateString: string): string {
+  try {
+    // Parse the YYYY-MM-DD string and format it
+    const [year, month, day] = dateString.split('-').map(Number);
+    const date = new Date(year, month - 1, day); // month is 0-indexed
+    
+    return new Intl.DateTimeFormat('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    }).format(date);
+  } catch (error) {
+    console.error('Error formatting date string:', error);
+    return dateString;
+  }
+}

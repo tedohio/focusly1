@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { FileText, Save } from 'lucide-react';
 import { getNote, createNote } from '@/app/(main)/actions/notes';
+import { formatDateString } from '@/lib/timezone';
 import { toast } from 'sonner';
 
 interface NoteEditorProps {
@@ -76,12 +77,7 @@ export default function NoteEditor({ forDate, onComplete }: NoteEditorProps) {
       <div className="flex items-center space-x-2 text-sm text-gray-600">
         <FileText className="h-4 w-4" />
         <span>
-          {new Date(forDate).toLocaleDateString('en-US', { 
-            weekday: 'long',
-            month: 'long', 
-            day: 'numeric',
-            year: 'numeric'
-          })}
+          {formatDateString(forDate)}
         </span>
       </div>
 

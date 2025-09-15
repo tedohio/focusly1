@@ -120,3 +120,61 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  /* Aurora gradient animations */
+  @keyframes aurora-drift-subtle {
+    0%, 100% {
+      transform: rotate(-15deg) translateX(-10px) translateY(-5px);
+    }
+    50% {
+      transform: rotate(-12deg) translateX(10px) translateY(5px);
+    }
+  }
+
+  @keyframes aurora-drift-default {
+    0%, 100% {
+      transform: rotate(-15deg) translateX(-15px) translateY(-8px);
+    }
+    50% {
+      transform: rotate(-12deg) translateX(15px) translateY(8px);
+    }
+  }
+
+  @keyframes aurora-drift-bold {
+    0%, 100% {
+      transform: rotate(-15deg) translateX(-20px) translateY(-10px);
+    }
+    50% {
+      transform: rotate(-12deg) translateX(20px) translateY(10px);
+    }
+  }
+
+  /* Radial gradient utility */
+  .bg-gradient-radial {
+    background: radial-gradient(ellipse at center, var(--tw-gradient-stops));
+  }
+
+  /* Noise overlay with base64 data URI */
+  .noise-overlay {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  }
+
+  /* Glassmorphism utilities */
+  .glass-card {
+    @apply bg-white/10 dark:bg-white/5 backdrop-blur-md ring-1 ring-white/10 shadow-2xl;
+  }
+
+  /* High contrast form elements for dark backgrounds */
+  .form-input-dark {
+    @apply bg-white/10 border-white/20 text-white placeholder-white/60 focus:bg-white/15 focus:border-white/40 focus:ring-white/30;
+  }
+
+  .form-button-primary {
+    @apply bg-white text-black hover:bg-white/90 focus:ring-white/50;
+  }
+
+  .form-button-secondary {
+    @apply bg-transparent border-white/30 text-white hover:bg-white/10 hover:border-white/50 focus:ring-white/30;
+  }
+}
