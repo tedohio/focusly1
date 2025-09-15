@@ -9,13 +9,17 @@ const getSupabaseConfig = () => {
   return { supabaseUrl, supabaseAnonKey };
 };
 
-// Client-side Supabase client
+// Singleton pattern for client-side Supabase client to prevent multiple instances
+let _browserClient: ReturnType<typeof createBrowserClient> | null = null;
 export const createClientComponentClient = () => {
-  const { supabaseUrl, supabaseAnonKey } = getSupabaseConfig();
-  return createBrowserClient(supabaseUrl, supabaseAnonKey);
+  if (!_browserClient) {
+    const { supabaseUrl, supabaseAnonKey } = getSupabaseConfig();
+    _browserClient = createBrowserClient(supabaseUrl, supabaseAnonKey);
+  }
+  return _browserClient;
 };
 
-// Server-side Supabase client
+// Server-side Supabase client (always create new instance for server context)
 export const createServerComponentClient = () => {
   const { supabaseUrl, supabaseAnonKey } = getSupabaseConfig();
   return createServerClient(supabaseUrl, supabaseAnonKey, {
