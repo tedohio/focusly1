@@ -63,7 +63,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen relative bg-neutral-950 text-white">
+    <div className="min-h-screen relative bg-bg text-fg">
       {/* Background Container */}
       <div className="absolute inset-0 overflow-hidden">
         <AuroraBackground intensity="default" />
@@ -88,12 +88,12 @@ export default function LoginPage() {
           />
 
           {/* Login Card */}
-          <Card className="glass-card rounded-2xl border-0">
+          <Card className="bg-card border border-card-border rounded-2xl shadow-2xl backdrop-blur-md">
             <CardHeader className="space-y-2">
-              <CardTitle className="text-xl font-semibold text-white">
+              <CardTitle className="text-xl font-semibold text-fg">
                 Welcome back
               </CardTitle>
-              <CardDescription className="text-white/70">
+              <CardDescription className="text-fg-muted">
                 Enter your email to receive a magic link, or sign in with Google
               </CardDescription>
             </CardHeader>
@@ -101,7 +101,7 @@ export default function LoginPage() {
               {/* Email Form */}
               <form onSubmit={handleEmailLogin} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-white/90">
+                  <Label htmlFor="email" className="text-fg">
                     Email address
                   </Label>
                   <Input
@@ -140,7 +140,7 @@ export default function LoginPage() {
                   <span className="w-full border-t border-white/20" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-transparent px-3 text-white/60">
+                  <span className="bg-transparent px-3 text-fg/60">
                     Or continue with
                   </span>
                 </div>
@@ -171,17 +171,17 @@ export default function LoginPage() {
 
           {/* Footer */}
           <div className="text-center space-y-2">
-            <p className="text-xs text-white/50">
+            <p className="text-xs text-fg/50">
               By continuing, you agree to our{' '}
-              <a href="#" className="text-white/70 hover:text-white underline">
+              <a href="#" className="text-fg-muted hover:text-fg underline">
                 Terms of Service
               </a>{' '}
               and{' '}
-              <a href="#" className="text-white/70 hover:text-white underline">
+              <a href="#" className="text-fg-muted hover:text-fg underline">
                 Privacy Policy
               </a>
             </p>
-            <p className="text-xs text-white/40">
+            <p className="text-xs text-fg/40">
               © 2024 Focusly. All rights reserved.
             </p>
           </div>

@@ -45,9 +45,18 @@
 
 :root {
   --radius: 0.625rem;
+  
+  /* Light mode colors */
+  --bg: #ffffff;
+  --bg-muted: #f6f7f8;
+  --fg: #0b0f14;
+  --fg-muted: #5b6470;
+  --card: #ffffff;
+  --card-border: rgba(0, 0, 0, 0.08);
+  
+  /* Legacy shadcn colors for compatibility */
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
@@ -79,9 +88,17 @@
 }
 
 .dark {
+  /* Dark mode colors */
+  --bg: #0a0b0d;
+  --bg-muted: #0f1216;
+  --fg: #e7ebf0;
+  --fg-muted: #9aa6b2;
+  --card: #0c0f13;
+  --card-border: rgba(255, 255, 255, 0.08);
+  
+  /* Legacy shadcn colors for compatibility */
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
