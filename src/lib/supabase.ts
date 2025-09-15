@@ -1,4 +1,3 @@
-import { createClient } from '@supabase/supabase-js';
 import { createBrowserClient, createServerClient } from '@supabase/ssr';
 
 // Helper function to get environment variables with fallbacks
@@ -10,13 +9,23 @@ const getSupabaseConfig = () => {
 };
 
 // Singleton pattern for client-side Supabase client to prevent multiple instances
-let _browserClient: ReturnType<typeof createBrowserClient> | null = null;
+// Use globalThis to ensure the singleton persists across hydration
+declare global {
+  var __supabase_client__: ReturnType<typeof createBrowserClient> | undefined;
+}
+
 export const createClientComponentClient = () => {
-  if (!_browserClient) {
-    const { supabaseUrl, supabaseAnonKey } = getSupabaseConfig();
-    _browserClient = createBrowserClient(supabaseUrl, supabaseAnonKey);
+  // Check if we're in the browser
+  if (typeof window === 'undefined') {
+    throw new Error('createClientComponentClient can only be called on the client side');
   }
-  return _browserClient;
+
+  // Use globalThis to ensure singleton across hydration
+  if (!globalThis.__supabase_client__) {
+    const { supabaseUrl, supabaseAnonKey } = getSupabaseConfig();
+    globalThis.__supabase_client__ = createBrowserClient(supabaseUrl, supabaseAnonKey);
+  }
+  return globalThis.__supabase_client__;
 };
 
 // Server-side Supabase client (always create new instance for server context)
@@ -37,13 +46,3 @@ export const createServerComponentClient = () => {
     },
   });
 };
-
-// Legacy client for non-SSR usage (lazy initialization)
-let _supabaseClient: ReturnType<typeof createClient> | null = null;
-export const supabase = (() => {
-  if (!_supabaseClient) {
-    const { supabaseUrl, supabaseAnonKey } = getSupabaseConfig();
-    _supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
-  }
-  return _supabaseClient;
-})();
