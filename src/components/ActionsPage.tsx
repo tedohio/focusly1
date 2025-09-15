@@ -66,13 +66,6 @@ export default function ActionsPage() {
       icon: Calendar,
       completed: incompleteTodayTodos.length === 0 || tomorrowTodos.length > 0,
     },
-    {
-      id: 'today',
-      title: 'Today\'s To-Dos',
-      description: 'Execute on your priorities with drag-to-reorder',
-      icon: CheckSquare,
-      completed: todayTodos.length > 0,
-    },
   ];
 
   const handleStepComplete = (stepId: string) => {
@@ -123,13 +116,6 @@ export default function ActionsPage() {
           </div>
         );
         
-      case 'today':
-        return (
-          <div className="space-y-4">
-            <TodoList forDate={today} showAddButton={true} />
-          </div>
-        );
-        
       default:
         return null;
     }
@@ -140,7 +126,7 @@ export default function ActionsPage() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Daily Actions</h1>
         <p className="text-sm text-gray-600 mt-1">
-          Your daily loop: Take Notes → Reflect → Create Tomorrow's To-Dos → Today's To-Dos
+          Your daily loop: Take Notes → Reflect → Create Tomorrow's To-Dos
         </p>
       </div>
 
@@ -156,13 +142,14 @@ export default function ActionsPage() {
             <div key={step.id} className="flex items-center">
               <div className="flex flex-col items-center">
                 <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${
+                  className={`w-10 h-10 rounded-full flex items-center justify-center border-2 cursor-pointer transition-colors ${
                     isActive
                       ? 'border-blue-600 bg-blue-600 text-white'
                       : isCompleted || isPast
-                      ? 'border-green-600 bg-green-600 text-white'
-                      : 'border-gray-300 bg-white text-gray-400'
+                      ? 'border-green-600 bg-green-600 text-white hover:bg-green-700'
+                      : 'border-gray-300 bg-white text-gray-400 hover:border-gray-400 hover:text-gray-500'
                   }`}
+                  onClick={() => setCurrentStep(index)}
                 >
                   <Icon className="h-5 w-5" />
                 </div>
