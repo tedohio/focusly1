@@ -66,6 +66,21 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // URL to redirect to after sign in process completes
-  return NextResponse.redirect(`${origin}${next}`);
+  // Create a proper redirect response with the cookies
+  const response = NextResponse.redirect(`${origin}${next}`);
+  
+  // Ensure all cookies are properly set in the response
+  const cookieStore = await cookies();
+  cookieStore.getAll().forEach(cookie => {
+    response.cookies.set(cookie.name, cookie.value, {
+      path: cookie.path,
+      domain: cookie.domain,
+      secure: cookie.secure,
+      httpOnly: cookie.httpOnly,
+      sameSite: cookie.sameSite,
+      maxAge: cookie.maxAge,
+    });
+  });
+
+  return response;
 }
