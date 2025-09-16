@@ -29,7 +29,8 @@ export default function ReflectionForm({ forDate, onComplete }: ReflectionFormPr
   const createReflectionMutation = useMutation({
     mutationFn: createReflection,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['reflection', forDate] });
+      // Invalidate all reflection queries since we don't know the exact date the server used
+      queryClient.invalidateQueries({ queryKey: ['reflection'] });
       queryClient.invalidateQueries({ queryKey: ['reflections'] });
       setIsSaving(false);
       toast.success('Reflection saved');
@@ -61,7 +62,7 @@ export default function ReflectionForm({ forDate, onComplete }: ReflectionFormPr
       whatWentWell: whatWentWell.trim() || undefined,
       whatDidntGoWell: whatDidntGoWell.trim() || undefined,
       improvements: improvements.trim() || undefined,
-      forDate,
+      // Don't pass forDate - let server calculate current date in user's timezone
       isMonthly: false,
     });
   };

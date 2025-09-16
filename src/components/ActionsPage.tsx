@@ -16,11 +16,15 @@ import ReflectionForm from './ReflectionForm';
 import TodoList from './TodoList';
 import TomorrowPlanner from './TomorrowPlanner';
 
-export default function ActionsPage() {
+interface ActionsPageProps {
+  userTimezone?: string;
+}
+
+export default function ActionsPage({ userTimezone = 'UTC' }: ActionsPageProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const queryClient = useQueryClient();
-  const today = getToday();
-  const tomorrow = getTomorrow();
+  const today = getToday(userTimezone);
+  const tomorrow = getTomorrow(userTimezone);
 
   const { data: todayNote } = useQuery({
     queryKey: ['note', today],

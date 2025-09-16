@@ -27,7 +27,8 @@ export default function NoteEditor({ forDate, onComplete }: NoteEditorProps) {
   const createNoteMutation = useMutation({
     mutationFn: createNote,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['note', forDate] });
+      // Invalidate all note queries since we don't know the exact date the server used
+      queryClient.invalidateQueries({ queryKey: ['note'] });
       queryClient.invalidateQueries({ queryKey: ['notes'] });
       setIsSaving(false);
       toast.success('Note saved');
@@ -55,7 +56,7 @@ export default function NoteEditor({ forDate, onComplete }: NoteEditorProps) {
     setIsSaving(true);
     await createNoteMutation.mutateAsync({
       content: content.trim(),
-      forDate,
+      // Don't pass forDate - let server calculate current date in user's timezone
     });
   };
 
