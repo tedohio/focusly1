@@ -13,7 +13,6 @@ import { User, LogOut, Trash2, Settings as SettingsIcon } from 'lucide-react';
 import { getProfile, updateProfile } from '@/app/(main)/actions/profile';
 import { toast } from 'sonner';
 import ConfirmDialog from './ConfirmDialog';
-import { ThemeSelector } from '@/components/ui/ThemeSelector';
 
 interface SettingsPageProps {
   user: {
@@ -149,9 +148,6 @@ export default function SettingsPage({ user }: SettingsPageProps) {
           </div>
         </CardContent>
       </Card>
-
-      {/* Appearance */}
-      <ThemeSelector />
 
       {/* Account Actions */}
       <Card>

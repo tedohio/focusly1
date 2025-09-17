@@ -18,9 +18,6 @@ import { getCurrentMonth, getCurrentYear } from '@/lib/date';
 import { COMMON_TIMEZONES, getDefaultTimezone } from '@/lib/timezone';
 import { toast } from 'sonner';
 import ConfirmDialog from '@/components/ConfirmDialog';
-import { useTheme } from '@/components/theme/ThemeProvider';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Sun, Moon, Monitor } from 'lucide-react';
 
 interface FocusArea {
   id: string;
@@ -40,7 +37,6 @@ const STEPS = [
   'focus-areas',
   'monthly-goals',
   'timezone',
-  'theme',
   'complete'
 ] as const;
 
@@ -59,8 +55,6 @@ export default function OnboardingPage() {
     { id: '3', title: '', order: 3 },
   ]);
   const [timezone, setTimezone] = useState(getDefaultTimezone());
-  const [selectedTheme, setSelectedTheme] = useState<'light' | 'dark' | 'system'>('system');
-  const { setTheme } = useTheme();
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const router = useRouter();

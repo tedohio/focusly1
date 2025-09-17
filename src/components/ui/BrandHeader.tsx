@@ -33,7 +33,7 @@ export function BrandHeader({
           />
         </div>
         {subtitle && (
-          <p className="text-sm text-fg-muted">
+          <p className="text-sm text-white/70">
             {subtitle}
           </p>
         )}
@@ -52,12 +52,12 @@ export function BrandHeader({
             height={logo.height || 40}
             className="drop-shadow-lg"
           />
-          <h1 className="text-3xl font-semibold tracking-tight text-fg">
+          <h1 className="text-3xl font-semibold tracking-tight text-white">
             {title}
           </h1>
         </div>
         {subtitle && (
-          <p className="text-sm text-fg-muted">
+          <p className="text-sm text-white/70">
             {subtitle}
           </p>
         )}
@@ -80,11 +80,11 @@ export function BrandHeader({
         </div>
       )}
       <div className="space-y-2">
-        <h1 className="text-3xl font-semibold tracking-tight text-fg">
+        <h1 className="text-3xl font-semibold tracking-tight text-white">
           {title}
         </h1>
         {subtitle && (
-          <p className="text-sm text-fg-muted">
+          <p className="text-sm text-white/70">
             {subtitle}
           </p>
         )}
